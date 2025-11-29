@@ -65,6 +65,7 @@ const thebe_selector_output = ".output, .cell_output"
     <script>DOCUMENTATION_OPTIONS.pagename = 'cap1-eda';</script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Capítulo 2 – Preparación y Limpieza de Datos" href="cap2-preparacion.html" />
     <link rel="prev" title="Proyecto Integrador – Regresión Lineal Múltiple Avanzada" href="cap0-introduccion.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
@@ -174,6 +175,13 @@ const thebe_selector_output = ".output, .cell_output"
         </ul>
         <ul class="current nav bd-sidenav">
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">Capítulo 1 – Análisis Exploratorio de Datos (EDA)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cap2-preparacion.html">Capítulo 2 – Preparación y Limpieza de Datos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cap3-modelo-base.html">Capítulo 3 – Modelo Base de Regresión Lineal Múltiple</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cap4-diagnostico.html">Capítulo 4 – Diagnóstico del Modelo Lineal</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cap5-seleccion-modelos.html">Capítulo 5 — Selección de modelos y comparación</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cap6-modelo-final.html">Capítulo 6 – Modelo Final y Evaluación con Validación Cruzada</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cap7-conclusiones.html"><strong>📘 Capítulo 7 — Discusión y Conclusiones</strong></a></li>
+<li class="toctree-l1"><a class="reference internal" href="cap8-referencias.html">Capítulo 8 — Referencias Bibliográficas</a></li>
 </ul>
 
     </div>
@@ -1133,7 +1141,7 @@ estación y año:</p>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>C:\Users\User\AppData\Local\Temp\ipykernel_36764\3530942428.py:2: FutureWarning: The default of observed=False is deprecated and will be changed to True in a future version of pandas. Pass observed=False to retain current behavior or observed=True to adopt the future default and silence this warning.
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>C:\Users\User\AppData\Local\Temp\ipykernel_9532\3530942428.py:2: FutureWarning: The default of observed=False is deprecated and will be changed to True in a future version of pandas. Pass observed=False to retain current behavior or observed=True to adopt the future default and silence this warning.
   cnt_by_hr = df.groupby(&quot;hr&quot;)[&quot;cnt&quot;].mean()
 </pre></div>
 </div>
@@ -1156,7 +1164,7 @@ estación y año:</p>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>C:\Users\User\AppData\Local\Temp\ipykernel_36764\4159658422.py:4: FutureWarning: The default of observed=False is deprecated and will be changed to True in a future version of pandas. Pass observed=False to retain current behavior or observed=True to adopt the future default and silence this warning.
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>C:\Users\User\AppData\Local\Temp\ipykernel_9532\4159658422.py:4: FutureWarning: The default of observed=False is deprecated and will be changed to True in a future version of pandas. Pass observed=False to retain current behavior or observed=True to adopt the future default and silence this warning.
   df.groupby(&quot;workingday&quot;)[&quot;cnt&quot;].mean().plot(kind=&quot;bar&quot;, ax=ax)
 </pre></div>
 </div>
@@ -1179,7 +1187,7 @@ estación y año:</p>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>C:\Users\User\AppData\Local\Temp\ipykernel_36764\470849457.py:4: FutureWarning: The default of observed=False is deprecated and will be changed to True in a future version of pandas. Pass observed=False to retain current behavior or observed=True to adopt the future default and silence this warning.
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>C:\Users\User\AppData\Local\Temp\ipykernel_9532\470849457.py:4: FutureWarning: The default of observed=False is deprecated and will be changed to True in a future version of pandas. Pass observed=False to retain current behavior or observed=True to adopt the future default and silence this warning.
   df.groupby(&quot;season&quot;)[&quot;cnt&quot;].mean().plot(kind=&quot;bar&quot;, ax=ax)
 </pre></div>
 </div>
@@ -1194,56 +1202,31 @@ de interés, incluyendo la demanda de bicicletas (<code class="docutils literal 
 identificar relaciones lineales potencialmente útiles para el modelo.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">numeric_cols</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="n">col</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span>
-    <span class="k">if</span> <span class="n">df</span><span class="p">[</span><span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">dtype</span> <span class="o">!=</span> <span class="s2">&quot;category&quot;</span> <span class="ow">and</span> <span class="n">col</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;instant&quot;</span><span class="p">]</span>
-<span class="p">]</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+
+<span class="c1"># Seleccionar solo columnas numéricas</span>
+<span class="n">numeric_cols</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">select_dtypes</span><span class="p">(</span><span class="n">include</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;number&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+
+<span class="c1"># Si quieres excluir alguna columna numérica específica (como &#39;instant&#39;):</span>
+<span class="n">numeric_cols</span> <span class="o">=</span> <span class="p">[</span><span class="n">col</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">numeric_cols</span> <span class="k">if</span> <span class="n">col</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;instant&quot;</span><span class="p">]]</span>
+
+<span class="n">numeric_cols</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">numeric_cols</span><span class="p">)</span>
+
 <span class="n">corr</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">numeric_cols</span><span class="p">]</span><span class="o">.</span><span class="n">corr</span><span class="p">()</span>
 <span class="n">corr</span><span class="p">[</span><span class="s2">&quot;cnt&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output traceback highlight-ipythontb notranslate"><div class="highlight"><pre><span></span><span class="gt">---------------------------------------------------------------------------</span>
-<span class="ne">ValueError</span><span class="g g-Whitespace">                                </span>Traceback (most recent call last)
-<span class="n">Cell</span> <span class="n">In</span><span class="p">[</span><span class="mi">18</span><span class="p">],</span> <span class="n">line</span> <span class="mi">5</span>
-<span class="g g-Whitespace">      </span><span class="mi">1</span> <span class="n">numeric_cols</span> <span class="o">=</span> <span class="p">[</span>
-<span class="g g-Whitespace">      </span><span class="mi">2</span>     <span class="n">col</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span>
-<span class="g g-Whitespace">      </span><span class="mi">3</span>     <span class="k">if</span> <span class="n">df</span><span class="p">[</span><span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">dtype</span> <span class="o">!=</span> <span class="s2">&quot;category&quot;</span> <span class="ow">and</span> <span class="n">col</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;instant&quot;</span><span class="p">]</span>
-<span class="g g-Whitespace">      </span><span class="mi">4</span> <span class="p">]</span>
-<span class="ne">----&gt; </span><span class="mi">5</span> <span class="n">corr</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">numeric_cols</span><span class="p">]</span><span class="o">.</span><span class="n">corr</span><span class="p">()</span>
-<span class="g g-Whitespace">      </span><span class="mi">6</span> <span class="n">corr</span><span class="p">[</span><span class="s2">&quot;cnt&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-
-<span class="nn">File ~\miniconda3\envs\ml_venv_bikes\lib\site-packages\pandas\core\frame.py:11076,</span> in <span class="ni">DataFrame.corr</span><span class="nt">(self, method, min_periods, numeric_only)</span>
-<span class="g g-Whitespace">  </span><span class="mi">11074</span> <span class="n">cols</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">columns</span>
-<span class="g g-Whitespace">  </span><span class="mi">11075</span> <span class="n">idx</span> <span class="o">=</span> <span class="n">cols</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-<span class="ne">&gt; </span><span class="mi">11076</span> <span class="n">mat</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span> <span class="n">na_value</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-<span class="g g-Whitespace">  </span><span class="mi">11078</span> <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;pearson&quot;</span><span class="p">:</span>
-<span class="g g-Whitespace">  </span><span class="mi">11079</span>     <span class="n">correl</span> <span class="o">=</span> <span class="n">libalgos</span><span class="o">.</span><span class="n">nancorr</span><span class="p">(</span><span class="n">mat</span><span class="p">,</span> <span class="n">minp</span><span class="o">=</span><span class="n">min_periods</span><span class="p">)</span>
-
-<span class="nn">File ~\miniconda3\envs\ml_venv_bikes\lib\site-packages\pandas\core\frame.py:2002,</span> in <span class="ni">DataFrame.to_numpy</span><span class="nt">(self, dtype, copy, na_value)</span>
-<span class="g g-Whitespace">   </span><span class="mi">2000</span> <span class="k">if</span> <span class="n">dtype</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-<span class="g g-Whitespace">   </span><span class="mi">2001</span>     <span class="n">dtype</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">(</span><span class="n">dtype</span><span class="p">)</span>
-<span class="ne">-&gt; </span><span class="mi">2002</span> <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mgr</span><span class="o">.</span><span class="n">as_array</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="n">copy</span><span class="p">,</span> <span class="n">na_value</span><span class="o">=</span><span class="n">na_value</span><span class="p">)</span>
-<span class="g g-Whitespace">   </span><span class="mi">2003</span> <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">dtype</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">dtype</span><span class="p">:</span>
-<span class="g g-Whitespace">   </span><span class="mi">2004</span>     <span class="n">result</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>
-
-<span class="nn">File ~\miniconda3\envs\ml_venv_bikes\lib\site-packages\pandas\core\internals\managers.py:1713,</span> in <span class="ni">BlockManager.as_array</span><span class="nt">(self, dtype, copy, na_value)</span>
-<span class="g g-Whitespace">   </span><span class="mi">1711</span>         <span class="n">arr</span><span class="o">.</span><span class="n">flags</span><span class="o">.</span><span class="n">writeable</span> <span class="o">=</span> <span class="kc">False</span>
-<span class="g g-Whitespace">   </span><span class="mi">1712</span> <span class="k">else</span><span class="p">:</span>
-<span class="ne">-&gt; </span><span class="mi">1713</span>     <span class="n">arr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_interleave</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">na_value</span><span class="o">=</span><span class="n">na_value</span><span class="p">)</span>
-<span class="g g-Whitespace">   </span><span class="mi">1714</span>     <span class="c1"># The underlying data was copied within _interleave, so no need</span>
-<span class="g g-Whitespace">   </span><span class="mi">1715</span>     <span class="c1"># to further copy if copy=True or setting na_value</span>
-<span class="g g-Whitespace">   </span><span class="mi">1717</span> <span class="k">if</span> <span class="n">na_value</span> <span class="ow">is</span> <span class="n">lib</span><span class="o">.</span><span class="n">no_default</span><span class="p">:</span>
-
-<span class="nn">File ~\miniconda3\envs\ml_venv_bikes\lib\site-packages\pandas\core\internals\managers.py:1772,</span> in <span class="ni">BlockManager._interleave</span><span class="nt">(self, dtype, na_value)</span>
-<span class="g g-Whitespace">   </span><span class="mi">1770</span>     <span class="k">else</span><span class="p">:</span>
-<span class="g g-Whitespace">   </span><span class="mi">1771</span>         <span class="n">arr</span> <span class="o">=</span> <span class="n">blk</span><span class="o">.</span><span class="n">get_values</span><span class="p">(</span><span class="n">dtype</span><span class="p">)</span>
-<span class="ne">-&gt; </span><span class="mi">1772</span>     <span class="n">result</span><span class="p">[</span><span class="n">rl</span><span class="o">.</span><span class="n">indexer</span><span class="p">]</span> <span class="o">=</span> <span class="n">arr</span>
-<span class="g g-Whitespace">   </span><span class="mi">1773</span>     <span class="n">itemmask</span><span class="p">[</span><span class="n">rl</span><span class="o">.</span><span class="n">indexer</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
-<span class="g g-Whitespace">   </span><span class="mi">1775</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">itemmask</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
-
-<span class="ne">ValueError</span>: could not convert string to float: &#39;2011-01-01&#39;
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>cnt           1.000000
+registered    0.972151
+casual        0.694564
+temp          0.404772
+atemp         0.400929
+windspeed     0.093234
+hum          -0.322911
+Name: cnt, dtype: float64
 </pre></div>
 </div>
 </div>
@@ -1257,6 +1240,9 @@ identificar relaciones lineales potencialmente útiles para el modelo.</p>
 <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
+</div>
+<div class="cell_output docutils container">
+<img alt="_images/7cae993c135e511e4812f480b9b9e1ae8d994e647ee92069f16185461b4dad82.png" src="_images/7cae993c135e511e4812f480b9b9e1ae8d994e647ee92069f16185461b4dad82.png" />
 </div>
 </div>
 </section>
@@ -1340,6 +1326,15 @@ la construcción de matrices de diseño para los modelos de regresión.</p>
         <p class="prev-next-subtitle">previous</p>
         <p class="prev-next-title">Proyecto Integrador – Regresión Lineal Múltiple Avanzada</p>
       </div>
+    </a>
+    <a class="right-next"
+       href="cap2-preparacion.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Capítulo 2 – Preparación y Limpieza de Datos</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
     </a>
 </div>
                 </footer>

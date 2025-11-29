@@ -62,9 +62,12 @@ const thebe_selector_input = "pre"
 const thebe_selector_output = ".output, .cell_output"
 </script>
     <script async="async" src="_static/sphinx-thebe.js"></script>
+    <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'cap3-modelo-base';</script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Capítulo 4 – Diagnóstico del Modelo Lineal" href="cap4-diagnostico.html" />
     <link rel="prev" title="Capítulo 2 – Preparación y Limpieza de Datos" href="cap2-preparacion.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
@@ -176,6 +179,11 @@ const thebe_selector_output = ".output, .cell_output"
 <li class="toctree-l1"><a class="reference internal" href="cap1-eda.html">Capítulo 1 – Análisis Exploratorio de Datos (EDA)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="cap2-preparacion.html">Capítulo 2 – Preparación y Limpieza de Datos</a></li>
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">Capítulo 3 – Modelo Base de Regresión Lineal Múltiple</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cap4-diagnostico.html">Capítulo 4 – Diagnóstico del Modelo Lineal</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cap5-seleccion-modelos.html">Capítulo 5 — Selección de modelos y comparación</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cap6-modelo-final.html">Capítulo 6 – Modelo Final y Evaluación con Validación Cruzada</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cap7-conclusiones.html"><strong>📘 Capítulo 7 — Discusión y Conclusiones</strong></a></li>
+<li class="toctree-l1"><a class="reference internal" href="cap8-referencias.html">Capítulo 8 — Referencias Bibliográficas</a></li>
 </ul>
 
     </div>
@@ -639,15 +647,23 @@ document.write(`
 <span class="k">if</span> <span class="n">target_col</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">df_model</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
     <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;La columna &#39;cnt&#39; no se encuentra en &#39;hour_prepared.csv&#39;.&quot;</span><span class="p">)</span>
 
-<span class="n">y</span> <span class="o">=</span> <span class="n">df_model</span><span class="p">[</span><span class="n">target_col</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-<span class="n">X</span> <span class="o">=</span> <span class="n">df_model</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="n">target_col</span><span class="p">])</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">df_model</span><span class="p">[</span><span class="s2">&quot;cnt&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+<span class="n">X</span> <span class="o">=</span> <span class="n">df_model</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;cnt&quot;</span><span class="p">])</span>
 
-<span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">y</span><span class="o">.</span><span class="n">shape</span>
+<span class="n">X</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">select_dtypes</span><span class="p">(</span><span class="n">include</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;number&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+
+<span class="n">X</span><span class="o">.</span><span class="n">dtypes</span><span class="o">.</span><span class="n">head</span><span class="p">(),</span> <span class="n">y</span><span class="o">.</span><span class="n">shape</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>((17379, 42), (17379,))
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>(temp         float64
+ atemp        float64
+ hum          float64
+ windspeed    float64
+ peak_hour    float64
+ dtype: object,
+ (17379,))
 </pre></div>
 </div>
 </div>
@@ -663,7 +679,10 @@ document.write(`
 <p>Utilizamos una semilla fija (<code class="docutils literal notranslate"><span class="pre">random_state=123</span></code>) para garantizar reproducibilidad.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">X_train</span><span class="p">,</span> <span class="n">X_test</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">y_test</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.model_selection</span><span class="w"> </span><span class="kn">import</span> <span class="n">train_test_split</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">statsmodels.api</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sm</span>
+
+<span class="n">X_train</span><span class="p">,</span> <span class="n">X_test</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">y_test</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span>
     <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">123</span>
 <span class="p">)</span>
 
@@ -672,7 +691,7 @@ document.write(`
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>((13903, 42), (3476, 42))
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>((13903, 5), (3476, 5))
 </pre></div>
 </div>
 </div>
@@ -684,8 +703,8 @@ document.write(`
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Añadimos constante a los predictores</span>
-<span class="n">X_train_const</span> <span class="o">=</span> <span class="n">sm</span><span class="o">.</span><span class="n">add_constant</span><span class="p">(</span><span class="n">X_train</span><span class="p">)</span>
-<span class="n">X_test_const</span> <span class="o">=</span> <span class="n">sm</span><span class="o">.</span><span class="n">add_constant</span><span class="p">(</span><span class="n">X_test</span><span class="p">,</span> <span class="n">has_constant</span><span class="o">=</span><span class="s1">&#39;add&#39;</span><span class="p">)</span>
+<span class="n">X_train_const</span> <span class="o">=</span> <span class="n">sm</span><span class="o">.</span><span class="n">add_constant</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">has_constant</span><span class="o">=</span><span class="s2">&quot;add&quot;</span><span class="p">)</span>
+<span class="n">X_test_const</span>  <span class="o">=</span> <span class="n">sm</span><span class="o">.</span><span class="n">add_constant</span><span class="p">(</span><span class="n">X_test</span><span class="p">,</span>  <span class="n">has_constant</span><span class="o">=</span><span class="s2">&quot;add&quot;</span><span class="p">)</span>
 
 <span class="n">X_train_const</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
 </pre></div>
@@ -716,21 +735,6 @@ document.write(`
       <th>hum</th>
       <th>windspeed</th>
       <th>peak_hour</th>
-      <th>hr_1</th>
-      <th>hr_2</th>
-      <th>hr_3</th>
-      <th>hr_4</th>
-      <th>...</th>
-      <th>weekday_5</th>
-      <th>weekday_6</th>
-      <th>workingday_1</th>
-      <th>season_2</th>
-      <th>season_3</th>
-      <th>season_4</th>
-      <th>yr_1</th>
-      <th>weathersit_2</th>
-      <th>weathersit_3</th>
-      <th>weathersit_4</th>
     </tr>
   </thead>
   <tbody>
@@ -741,22 +745,7 @@ document.write(`
       <td>0.5152</td>
       <td>0.83</td>
       <td>0.2836</td>
-      <td>0</td>
-      <td>False</td>
-      <td>False</td>
-      <td>True</td>
-      <td>False</td>
-      <td>...</td>
-      <td>False</td>
-      <td>False</td>
-      <td>True</td>
-      <td>True</td>
-      <td>False</td>
-      <td>False</td>
-      <td>False</td>
-      <td>False</td>
-      <td>False</td>
-      <td>False</td>
+      <td>0.0</td>
     </tr>
     <tr>
       <th>15553</th>
@@ -765,22 +754,7 @@ document.write(`
       <td>0.5303</td>
       <td>0.73</td>
       <td>0.2985</td>
-      <td>0</td>
-      <td>False</td>
-      <td>False</td>
-      <td>False</td>
-      <td>False</td>
-      <td>...</td>
-      <td>False</td>
-      <td>False</td>
-      <td>True</td>
-      <td>False</td>
-      <td>False</td>
-      <td>True</td>
-      <td>True</td>
-      <td>True</td>
-      <td>False</td>
-      <td>False</td>
+      <td>0.0</td>
     </tr>
     <tr>
       <th>1931</th>
@@ -789,22 +763,7 @@ document.write(`
       <td>0.1818</td>
       <td>0.55</td>
       <td>0.1940</td>
-      <td>0</td>
-      <td>False</td>
-      <td>False</td>
-      <td>False</td>
-      <td>False</td>
-      <td>...</td>
-      <td>False</td>
-      <td>True</td>
-      <td>False</td>
-      <td>True</td>
-      <td>False</td>
-      <td>False</td>
-      <td>False</td>
-      <td>False</td>
-      <td>False</td>
-      <td>False</td>
+      <td>0.0</td>
     </tr>
     <tr>
       <th>5233</th>
@@ -813,22 +772,7 @@ document.write(`
       <td>0.6515</td>
       <td>0.37</td>
       <td>0.0896</td>
-      <td>0</td>
-      <td>False</td>
-      <td>False</td>
-      <td>False</td>
-      <td>False</td>
-      <td>...</td>
-      <td>False</td>
-      <td>False</td>
-      <td>True</td>
-      <td>False</td>
-      <td>True</td>
-      <td>False</td>
-      <td>False</td>
-      <td>False</td>
-      <td>False</td>
-      <td>False</td>
+      <td>0.0</td>
     </tr>
     <tr>
       <th>11900</th>
@@ -837,110 +781,88 @@ document.write(`
       <td>0.5455</td>
       <td>0.88</td>
       <td>0.1343</td>
-      <td>0</td>
-      <td>True</td>
-      <td>False</td>
-      <td>False</td>
-      <td>False</td>
-      <td>...</td>
-      <td>False</td>
-      <td>False</td>
-      <td>True</td>
-      <td>True</td>
-      <td>False</td>
-      <td>False</td>
-      <td>True</td>
-      <td>True</td>
-      <td>False</td>
-      <td>False</td>
+      <td>0.0</td>
     </tr>
   </tbody>
 </table>
-<p>5 rows × 43 columns</p>
 </div></div></div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Ajuste del modelo OLS en el conjunto de entrenamiento</span>
 <span class="n">ols</span> <span class="o">=</span> <span class="n">sm</span><span class="o">.</span><span class="n">OLS</span><span class="p">(</span><span class="n">y_train</span><span class="p">,</span> <span class="n">X_train_const</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
-<span class="n">ols</span>
+<span class="n">ols</span><span class="o">.</span><span class="n">summary</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output traceback highlight-ipythontb notranslate"><div class="highlight"><pre><span></span><span class="gt">---------------------------------------------------------------------------</span>
-<span class="ne">ValueError</span><span class="g g-Whitespace">                                </span>Traceback (most recent call last)
-<span class="n">Cell</span> <span class="n">In</span><span class="p">[</span><span class="mi">8</span><span class="p">],</span> <span class="n">line</span> <span class="mi">2</span>
-<span class="g g-Whitespace">      </span><span class="mi">1</span> <span class="c1"># Ajuste del modelo OLS en el conjunto de entrenamiento</span>
-<span class="ne">----&gt; </span><span class="mi">2</span> <span class="n">ols</span> <span class="o">=</span> <span class="n">sm</span><span class="o">.</span><span class="n">OLS</span><span class="p">(</span><span class="n">y_train</span><span class="p">,</span> <span class="n">X_train_const</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
-<span class="g g-Whitespace">      </span><span class="mi">3</span> <span class="n">ols</span>
-
-<span class="nn">File ~\miniconda3\envs\ml_venv_bikes\lib\site-packages\statsmodels\regression\linear_model.py:921,</span> in <span class="ni">OLS.__init__</span><span class="nt">(self, endog, exog, missing, hasconst, **kwargs)</span>
-<span class="g g-Whitespace">    </span><span class="mi">918</span>     <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;Weights are not supported in OLS and will be ignored&quot;</span>
-<span class="g g-Whitespace">    </span><span class="mi">919</span>            <span class="s2">&quot;An exception will be raised in the next version.&quot;</span><span class="p">)</span>
-<span class="g g-Whitespace">    </span><span class="mi">920</span>     <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">ValueWarning</span><span class="p">)</span>
-<span class="ne">--&gt; </span><span class="mi">921</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">endog</span><span class="p">,</span> <span class="n">exog</span><span class="p">,</span> <span class="n">missing</span><span class="o">=</span><span class="n">missing</span><span class="p">,</span>
-<span class="g g-Whitespace">    </span><span class="mi">922</span>                           <span class="n">hasconst</span><span class="o">=</span><span class="n">hasconst</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-<span class="g g-Whitespace">    </span><span class="mi">923</span> <span class="k">if</span> <span class="s2">&quot;weights&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_init_keys</span><span class="p">:</span>
-<span class="g g-Whitespace">    </span><span class="mi">924</span>     <span class="bp">self</span><span class="o">.</span><span class="n">_init_keys</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="s2">&quot;weights&quot;</span><span class="p">)</span>
-
-<span class="nn">File ~\miniconda3\envs\ml_venv_bikes\lib\site-packages\statsmodels\regression\linear_model.py:746,</span> in <span class="ni">WLS.__init__</span><span class="nt">(self, endog, exog, weights, missing, hasconst, **kwargs)</span>
-<span class="g g-Whitespace">    </span><span class="mi">744</span> <span class="k">else</span><span class="p">:</span>
-<span class="g g-Whitespace">    </span><span class="mi">745</span>     <span class="n">weights</span> <span class="o">=</span> <span class="n">weights</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span>
-<span class="ne">--&gt; </span><span class="mi">746</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">endog</span><span class="p">,</span> <span class="n">exog</span><span class="p">,</span> <span class="n">missing</span><span class="o">=</span><span class="n">missing</span><span class="p">,</span>
-<span class="g g-Whitespace">    </span><span class="mi">747</span>                           <span class="n">weights</span><span class="o">=</span><span class="n">weights</span><span class="p">,</span> <span class="n">hasconst</span><span class="o">=</span><span class="n">hasconst</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-<span class="g g-Whitespace">    </span><span class="mi">748</span> <span class="n">nobs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exog</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-<span class="g g-Whitespace">    </span><span class="mi">749</span> <span class="n">weights</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">weights</span>
-
-<span class="nn">File ~\miniconda3\envs\ml_venv_bikes\lib\site-packages\statsmodels\regression\linear_model.py:200,</span> in <span class="ni">RegressionModel.__init__</span><span class="nt">(self, endog, exog, **kwargs)</span>
-<span class="g g-Whitespace">    </span><span class="mi">199</span> <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">endog</span><span class="p">,</span> <span class="n">exog</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<span class="ne">--&gt; </span><span class="mi">200</span>     <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">endog</span><span class="p">,</span> <span class="n">exog</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-<span class="g g-Whitespace">    </span><span class="mi">201</span>     <span class="bp">self</span><span class="o">.</span><span class="n">pinv_wexog</span><span class="p">:</span> <span class="n">Float64Array</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-<span class="g g-Whitespace">    </span><span class="mi">202</span>     <span class="bp">self</span><span class="o">.</span><span class="n">_data_attr</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="s1">&#39;pinv_wexog&#39;</span><span class="p">,</span> <span class="s1">&#39;wendog&#39;</span><span class="p">,</span> <span class="s1">&#39;wexog&#39;</span><span class="p">,</span> <span class="s1">&#39;weights&#39;</span><span class="p">])</span>
-
-<span class="nn">File ~\miniconda3\envs\ml_venv_bikes\lib\site-packages\statsmodels\base\model.py:270,</span> in <span class="ni">LikelihoodModel.__init__</span><span class="nt">(self, endog, exog, **kwargs)</span>
-<span class="g g-Whitespace">    </span><span class="mi">269</span> <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">endog</span><span class="p">,</span> <span class="n">exog</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<span class="ne">--&gt; </span><span class="mi">270</span>     <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">endog</span><span class="p">,</span> <span class="n">exog</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-<span class="g g-Whitespace">    </span><span class="mi">271</span>     <span class="bp">self</span><span class="o">.</span><span class="n">initialize</span><span class="p">()</span>
-
-<span class="nn">File ~\miniconda3\envs\ml_venv_bikes\lib\site-packages\statsmodels\base\model.py:95,</span> in <span class="ni">Model.__init__</span><span class="nt">(self, endog, exog, **kwargs)</span>
-<span class="g g-Whitespace">     </span><span class="mi">93</span> <span class="n">missing</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;missing&#39;</span><span class="p">,</span> <span class="s1">&#39;none&#39;</span><span class="p">)</span>
-<span class="g g-Whitespace">     </span><span class="mi">94</span> <span class="n">hasconst</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;hasconst&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-<span class="ne">---&gt; </span><span class="mi">95</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_handle_data</span><span class="p">(</span><span class="n">endog</span><span class="p">,</span> <span class="n">exog</span><span class="p">,</span> <span class="n">missing</span><span class="p">,</span> <span class="n">hasconst</span><span class="p">,</span>
-<span class="g g-Whitespace">     </span><span class="mi">96</span>                               <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-<span class="g g-Whitespace">     </span><span class="mi">97</span> <span class="bp">self</span><span class="o">.</span><span class="n">k_constant</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">k_constant</span>
-<span class="g g-Whitespace">     </span><span class="mi">98</span> <span class="bp">self</span><span class="o">.</span><span class="n">exog</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">exog</span>
-
-<span class="nn">File ~\miniconda3\envs\ml_venv_bikes\lib\site-packages\statsmodels\base\model.py:135,</span> in <span class="ni">Model._handle_data</span><span class="nt">(self, endog, exog, missing, hasconst, **kwargs)</span>
-<span class="g g-Whitespace">    </span><span class="mi">134</span> <span class="k">def</span><span class="w"> </span><span class="nf">_handle_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">endog</span><span class="p">,</span> <span class="n">exog</span><span class="p">,</span> <span class="n">missing</span><span class="p">,</span> <span class="n">hasconst</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<span class="ne">--&gt; </span><span class="mi">135</span>     <span class="n">data</span> <span class="o">=</span> <span class="n">handle_data</span><span class="p">(</span><span class="n">endog</span><span class="p">,</span> <span class="n">exog</span><span class="p">,</span> <span class="n">missing</span><span class="p">,</span> <span class="n">hasconst</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-<span class="g g-Whitespace">    </span><span class="mi">136</span>     <span class="c1"># kwargs arrays could have changed, easier to just attach here</span>
-<span class="g g-Whitespace">    </span><span class="mi">137</span>     <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
-
-<span class="nn">File ~\miniconda3\envs\ml_venv_bikes\lib\site-packages\statsmodels\base\data.py:675,</span> in <span class="ni">handle_data</span><span class="nt">(endog, exog, missing, hasconst, **kwargs)</span>
-<span class="g g-Whitespace">    </span><span class="mi">672</span>     <span class="n">exog</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">exog</span><span class="p">)</span>
-<span class="g g-Whitespace">    </span><span class="mi">674</span> <span class="n">klass</span> <span class="o">=</span> <span class="n">handle_data_class_factory</span><span class="p">(</span><span class="n">endog</span><span class="p">,</span> <span class="n">exog</span><span class="p">)</span>
-<span class="ne">--&gt; </span><span class="mi">675</span> <span class="k">return</span> <span class="n">klass</span><span class="p">(</span><span class="n">endog</span><span class="p">,</span> <span class="n">exog</span><span class="o">=</span><span class="n">exog</span><span class="p">,</span> <span class="n">missing</span><span class="o">=</span><span class="n">missing</span><span class="p">,</span> <span class="n">hasconst</span><span class="o">=</span><span class="n">hasconst</span><span class="p">,</span>
-<span class="g g-Whitespace">    </span><span class="mi">676</span>              <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-
-<span class="nn">File ~\miniconda3\envs\ml_venv_bikes\lib\site-packages\statsmodels\base\data.py:84,</span> in <span class="ni">ModelData.__init__</span><span class="nt">(self, endog, exog, missing, hasconst, **kwargs)</span>
-<span class="g g-Whitespace">     </span><span class="mi">82</span>     <span class="bp">self</span><span class="o">.</span><span class="n">orig_endog</span> <span class="o">=</span> <span class="n">endog</span>
-<span class="g g-Whitespace">     </span><span class="mi">83</span>     <span class="bp">self</span><span class="o">.</span><span class="n">orig_exog</span> <span class="o">=</span> <span class="n">exog</span>
-<span class="ne">---&gt; </span><span class="mi">84</span>     <span class="bp">self</span><span class="o">.</span><span class="n">endog</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">exog</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_convert_endog_exog</span><span class="p">(</span><span class="n">endog</span><span class="p">,</span> <span class="n">exog</span><span class="p">)</span>
-<span class="g g-Whitespace">     </span><span class="mi">86</span> <span class="bp">self</span><span class="o">.</span><span class="n">const_idx</span> <span class="o">=</span> <span class="kc">None</span>
-<span class="g g-Whitespace">     </span><span class="mi">87</span> <span class="bp">self</span><span class="o">.</span><span class="n">k_constant</span> <span class="o">=</span> <span class="mi">0</span>
-
-<span class="nn">File ~\miniconda3\envs\ml_venv_bikes\lib\site-packages\statsmodels\base\data.py:509,</span> in <span class="ni">PandasData._convert_endog_exog</span><span class="nt">(self, endog, exog)</span>
-<span class="g g-Whitespace">    </span><span class="mi">507</span> <span class="n">exog</span> <span class="o">=</span> <span class="n">exog</span> <span class="k">if</span> <span class="n">exog</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">exog</span><span class="p">)</span>
-<span class="g g-Whitespace">    </span><span class="mi">508</span> <span class="k">if</span> <span class="n">endog</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="nb">object</span> <span class="ow">or</span> <span class="n">exog</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">exog</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="nb">object</span><span class="p">:</span>
-<span class="ne">--&gt; </span><span class="mi">509</span>     <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Pandas data cast to numpy dtype of object. &quot;</span>
-<span class="g g-Whitespace">    </span><span class="mi">510</span>                      <span class="s2">&quot;Check input data with np.asarray(data).&quot;</span><span class="p">)</span>
-<span class="g g-Whitespace">    </span><span class="mi">511</span> <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_convert_endog_exog</span><span class="p">(</span><span class="n">endog</span><span class="p">,</span> <span class="n">exog</span><span class="p">)</span>
-
-<span class="ne">ValueError</span>: Pandas data cast to numpy dtype of object. Check input data with np.asarray(data).
-</pre></div>
-</div>
-</div>
+<div class="output text_html"><table class="simpletable">
+<caption>OLS Regression Results</caption>
+<tr>
+  <th>Dep. Variable:</th>           <td>cnt</td>       <th>  R-squared:         </th> <td>   0.452</td> 
+</tr>
+<tr>
+  <th>Model:</th>                   <td>OLS</td>       <th>  Adj. R-squared:    </th> <td>   0.452</td> 
+</tr>
+<tr>
+  <th>Method:</th>             <td>Least Squares</td>  <th>  F-statistic:       </th> <td>   2293.</td> 
+</tr>
+<tr>
+  <th>Date:</th>             <td>Sat, 29 Nov 2025</td> <th>  Prob (F-statistic):</th>  <td>  0.00</td>  
+</tr>
+<tr>
+  <th>Time:</th>                 <td>02:51:24</td>     <th>  Log-Likelihood:    </th> <td> -87821.</td> 
+</tr>
+<tr>
+  <th>No. Observations:</th>      <td> 13903</td>      <th>  AIC:               </th> <td>1.757e+05</td>
+</tr>
+<tr>
+  <th>Df Residuals:</th>          <td> 13897</td>      <th>  BIC:               </th> <td>1.757e+05</td>
+</tr>
+<tr>
+  <th>Df Model:</th>              <td>     5</td>      <th>                     </th>     <td> </td>    
+</tr>
+<tr>
+  <th>Covariance Type:</th>      <td>nonrobust</td>    <th>                     </th>     <td> </td>    
+</tr>
+</table>
+<table class="simpletable">
+<tr>
+      <td></td>         <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
+</tr>
+<tr>
+  <th>const</th>     <td>  120.0733</td> <td>    6.250</td> <td>   19.212</td> <td> 0.000</td> <td>  107.823</td> <td>  132.324</td>
+</tr>
+<tr>
+  <th>temp</th>      <td>   61.2861</td> <td>   40.274</td> <td>    1.522</td> <td> 0.128</td> <td>  -17.656</td> <td>  140.229</td>
+</tr>
+<tr>
+  <th>atemp</th>     <td>  340.4978</td> <td>   45.201</td> <td>    7.533</td> <td> 0.000</td> <td>  251.899</td> <td>  429.097</td>
+</tr>
+<tr>
+  <th>hum</th>       <td> -273.4382</td> <td>    6.176</td> <td>  -44.276</td> <td> 0.000</td> <td> -285.543</td> <td> -261.333</td>
+</tr>
+<tr>
+  <th>windspeed</th> <td>    9.5407</td> <td>   10.030</td> <td>    0.951</td> <td> 0.341</td> <td>  -10.119</td> <td>   29.200</td>
+</tr>
+<tr>
+  <th>peak_hour</th> <td>  184.7146</td> <td>    2.622</td> <td>   70.437</td> <td> 0.000</td> <td>  179.574</td> <td>  189.855</td>
+</tr>
+</table>
+<table class="simpletable">
+<tr>
+  <th>Omnibus:</th>       <td>1672.276</td> <th>  Durbin-Watson:     </th> <td>   2.033</td>
+</tr>
+<tr>
+  <th>Prob(Omnibus):</th>  <td> 0.000</td>  <th>  Jarque-Bera (JB):  </th> <td>2797.170</td>
+</tr>
+<tr>
+  <th>Skew:</th>           <td> 0.831</td>  <th>  Prob(JB):          </th> <td>    0.00</td>
+</tr>
+<tr>
+  <th>Kurtosis:</th>       <td> 4.438</td>  <th>  Cond. No.          </th> <td>    75.1</td>
+</tr>
+</table><br/><br/>Notes:<br/>[1] Standard Errors assume that the covariance matrix of the errors is correctly specified.</div></div>
 </div>
 <section id="resumen-del-modelo">
 <h3>4.1. Resumen del modelo<a class="headerlink" href="#resumen-del-modelo" title="Permalink to this heading">#</a></h3>
@@ -951,6 +873,74 @@ document.write(`
 </pre></div>
 </div>
 </div>
+<div class="cell_output docutils container">
+<div class="output text_html"><table class="simpletable">
+<caption>OLS Regression Results</caption>
+<tr>
+  <th>Dep. Variable:</th>           <td>cnt</td>       <th>  R-squared:         </th> <td>   0.452</td> 
+</tr>
+<tr>
+  <th>Model:</th>                   <td>OLS</td>       <th>  Adj. R-squared:    </th> <td>   0.452</td> 
+</tr>
+<tr>
+  <th>Method:</th>             <td>Least Squares</td>  <th>  F-statistic:       </th> <td>   2293.</td> 
+</tr>
+<tr>
+  <th>Date:</th>             <td>Sat, 29 Nov 2025</td> <th>  Prob (F-statistic):</th>  <td>  0.00</td>  
+</tr>
+<tr>
+  <th>Time:</th>                 <td>02:51:24</td>     <th>  Log-Likelihood:    </th> <td> -87821.</td> 
+</tr>
+<tr>
+  <th>No. Observations:</th>      <td> 13903</td>      <th>  AIC:               </th> <td>1.757e+05</td>
+</tr>
+<tr>
+  <th>Df Residuals:</th>          <td> 13897</td>      <th>  BIC:               </th> <td>1.757e+05</td>
+</tr>
+<tr>
+  <th>Df Model:</th>              <td>     5</td>      <th>                     </th>     <td> </td>    
+</tr>
+<tr>
+  <th>Covariance Type:</th>      <td>nonrobust</td>    <th>                     </th>     <td> </td>    
+</tr>
+</table>
+<table class="simpletable">
+<tr>
+      <td></td>         <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
+</tr>
+<tr>
+  <th>const</th>     <td>  120.0733</td> <td>    6.250</td> <td>   19.212</td> <td> 0.000</td> <td>  107.823</td> <td>  132.324</td>
+</tr>
+<tr>
+  <th>temp</th>      <td>   61.2861</td> <td>   40.274</td> <td>    1.522</td> <td> 0.128</td> <td>  -17.656</td> <td>  140.229</td>
+</tr>
+<tr>
+  <th>atemp</th>     <td>  340.4978</td> <td>   45.201</td> <td>    7.533</td> <td> 0.000</td> <td>  251.899</td> <td>  429.097</td>
+</tr>
+<tr>
+  <th>hum</th>       <td> -273.4382</td> <td>    6.176</td> <td>  -44.276</td> <td> 0.000</td> <td> -285.543</td> <td> -261.333</td>
+</tr>
+<tr>
+  <th>windspeed</th> <td>    9.5407</td> <td>   10.030</td> <td>    0.951</td> <td> 0.341</td> <td>  -10.119</td> <td>   29.200</td>
+</tr>
+<tr>
+  <th>peak_hour</th> <td>  184.7146</td> <td>    2.622</td> <td>   70.437</td> <td> 0.000</td> <td>  179.574</td> <td>  189.855</td>
+</tr>
+</table>
+<table class="simpletable">
+<tr>
+  <th>Omnibus:</th>       <td>1672.276</td> <th>  Durbin-Watson:     </th> <td>   2.033</td>
+</tr>
+<tr>
+  <th>Prob(Omnibus):</th>  <td> 0.000</td>  <th>  Jarque-Bera (JB):  </th> <td>2797.170</td>
+</tr>
+<tr>
+  <th>Skew:</th>           <td> 0.831</td>  <th>  Prob(JB):          </th> <td>    0.00</td>
+</tr>
+<tr>
+  <th>Kurtosis:</th>       <td> 4.438</td>  <th>  Cond. No.          </th> <td>    75.1</td>
+</tr>
+</table><br/><br/>Notes:<br/>[1] Standard Errors assume that the covariance matrix of the errors is correctly specified.</div></div>
 </div>
 </section>
 <section id="tabla-de-coeficientes-en-formato-tabular">
@@ -984,6 +974,100 @@ document.write(`
 </pre></div>
 </div>
 </div>
+<div class="cell_output docutils container">
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>coef</th>
+      <th>std err</th>
+      <th>t</th>
+      <th>P&gt;|t|</th>
+      <th>IC 2.5%</th>
+      <th>IC 97.5%</th>
+    </tr>
+    <tr>
+      <th>Parámetro</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>const</th>
+      <td>120.0733</td>
+      <td>6.2499</td>
+      <td>19.2122</td>
+      <td>0.0000</td>
+      <td>107.8227</td>
+      <td>132.3239</td>
+    </tr>
+    <tr>
+      <th>temp</th>
+      <td>61.2861</td>
+      <td>40.2740</td>
+      <td>1.5217</td>
+      <td>0.1281</td>
+      <td>-17.6564</td>
+      <td>140.2287</td>
+    </tr>
+    <tr>
+      <th>atemp</th>
+      <td>340.4978</td>
+      <td>45.2005</td>
+      <td>7.5331</td>
+      <td>0.0000</td>
+      <td>251.8987</td>
+      <td>429.0969</td>
+    </tr>
+    <tr>
+      <th>hum</th>
+      <td>-273.4382</td>
+      <td>6.1757</td>
+      <td>-44.2762</td>
+      <td>0.0000</td>
+      <td>-285.5434</td>
+      <td>-261.3329</td>
+    </tr>
+    <tr>
+      <th>windspeed</th>
+      <td>9.5407</td>
+      <td>10.0298</td>
+      <td>0.9512</td>
+      <td>0.3415</td>
+      <td>-10.1190</td>
+      <td>29.2005</td>
+    </tr>
+    <tr>
+      <th>peak_hour</th>
+      <td>184.7146</td>
+      <td>2.6224</td>
+      <td>70.4371</td>
+      <td>0.0000</td>
+      <td>179.5743</td>
+      <td>189.8548</td>
+    </tr>
+  </tbody>
+</table>
+</div></div></div>
 </div>
 </section>
 </section>
@@ -1016,6 +1100,43 @@ document.write(`
 </pre></div>
 </div>
 </div>
+<div class="cell_output docutils container">
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>RMSE</th>
+      <th>R2</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>Train</th>
+      <td>133.9912</td>
+      <td>0.4521</td>
+    </tr>
+    <tr>
+      <th>Test</th>
+      <td>135.8480</td>
+      <td>0.4481</td>
+    </tr>
+  </tbody>
+</table>
+</div></div></div>
 </div>
 </section>
 <section id="graficos-basicos-de-ajuste">
@@ -1038,6 +1159,9 @@ document.write(`
 </pre></div>
 </div>
 </div>
+<div class="cell_output docutils container">
+<img alt="_images/f402fc87638cdde80cf9b93336ed2e0627a69ff2b7b3b93818978c7e45766a2d.png" src="_images/f402fc87638cdde80cf9b93336ed2e0627a69ff2b7b3b93818978c7e45766a2d.png" />
+</div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -1052,6 +1176,9 @@ document.write(`
 <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
+</div>
+<div class="cell_output docutils container">
+<img alt="_images/f1eb5041cbcfe8297113e0a4455bd3df73c3ee12c66e2daced62a31278d2db82.png" src="_images/f1eb5041cbcfe8297113e0a4455bd3df73c3ee12c66e2daced62a31278d2db82.png" />
 </div>
 </div>
 </section>
@@ -1108,6 +1235,15 @@ document.write(`
         <p class="prev-next-subtitle">previous</p>
         <p class="prev-next-title">Capítulo 2 – Preparación y Limpieza de Datos</p>
       </div>
+    </a>
+    <a class="right-next"
+       href="cap4-diagnostico.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Capítulo 4 – Diagnóstico del Modelo Lineal</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
     </a>
 </div>
                 </footer>

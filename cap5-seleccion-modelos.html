@@ -9,7 +9,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
-    <title>Capítulo 5 – Selección de Variables y Comparación de Modelos &#8212; My sample book</title>
+    <title>Capítulo 5 — Selección de modelos y comparación &#8212; My sample book</title>
   
   
   
@@ -62,6 +62,8 @@ const thebe_selector_input = "pre"
 const thebe_selector_output = ".output, .cell_output"
 </script>
     <script async="async" src="_static/sphinx-thebe.js"></script>
+    <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'cap5-seleccion-modelos';</script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -178,8 +180,10 @@ const thebe_selector_output = ".output, .cell_output"
 <li class="toctree-l1"><a class="reference internal" href="cap2-preparacion.html">Capítulo 2 – Preparación y Limpieza de Datos</a></li>
 <li class="toctree-l1"><a class="reference internal" href="cap3-modelo-base.html">Capítulo 3 – Modelo Base de Regresión Lineal Múltiple</a></li>
 <li class="toctree-l1"><a class="reference internal" href="cap4-diagnostico.html">Capítulo 4 – Diagnóstico del Modelo Lineal</a></li>
-<li class="toctree-l1 current active"><a class="current reference internal" href="#">Capítulo 5 – Selección de Variables y Comparación de Modelos</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Capítulo 5 — Selección de modelos y comparación</a></li>
 <li class="toctree-l1"><a class="reference internal" href="cap6-modelo-final.html">Capítulo 6 – Modelo Final y Evaluación con Validación Cruzada</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cap7-conclusiones.html"><strong>📘 Capítulo 7 — Discusión y Conclusiones</strong></a></li>
+<li class="toctree-l1"><a class="reference internal" href="cap8-referencias.html">Capítulo 8 — Referencias Bibliográficas</a></li>
 </ul>
 
     </div>
@@ -365,7 +369,7 @@ document.write(`
               
 
 <div id="jb-print-docs-body" class="onlyprint">
-    <h1>Capítulo 5 – Selección de Variables y Comparación de Modelos</h1>
+    <h1>Capítulo 5 — Selección de modelos y comparación</h1>
     <!-- Table of contents -->
     <div id="print-main-content">
         <div id="jb-print-toc">
@@ -375,10 +379,11 @@ document.write(`
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#forward-selection">Forward Selection</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#backward-elimination">Backward Elimination</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#stepwise-selection">Stepwise Selection</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#validacion-cruzada-comparacion-de-modelos">Validación Cruzada – Comparación de Modelos</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#carga-del-conjunto-de-datos-y-definicion-de-variables">5.1 Carga del conjunto de datos y definición de variables</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#particion-entrenamiento-prueba-y-modelo-completo">5.2 Partición entrenamiento / prueba y modelo completo</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#seleccion-hacia-adelante-forward-aic">5.3 Selección hacia adelante (Forward AIC)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#seleccion-hacia-atras-backward-aic">5.4 Selección hacia atrás (Backward AIC)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#resumen-comparativo-de-modelos">5.5 Resumen comparativo de modelos</a></li>
 </ul>
             </nav>
         </div>
@@ -390,231 +395,493 @@ document.write(`
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section class="tex2jax_ignore mathjax_ignore" id="capitulo-5-seleccion-de-variables-y-comparacion-de-modelos">
-<h1>Capítulo 5 – Selección de Variables y Comparación de Modelos<a class="headerlink" href="#capitulo-5-seleccion-de-variables-y-comparacion-de-modelos" title="Permalink to this heading">#</a></h1>
-<p>Este capítulo implementa selección de variables usando:</p>
+  <section class="tex2jax_ignore mathjax_ignore" id="capitulo-5-seleccion-de-modelos-y-comparacion">
+<h1>Capítulo 5 — Selección de modelos y comparación<a class="headerlink" href="#capitulo-5-seleccion-de-modelos-y-comparacion" title="Permalink to this heading">#</a></h1>
+<p>En este capítulo aplicaremos distintos criterios de selección de modelos de regresión lineal múltiple para el sistema de bicicletas compartidas.</p>
+<p>Trabajaremos con el conjunto de datos ya preprocesado <code class="docutils literal notranslate"><span class="pre">hour_prepared.csv</span></code> y:</p>
 <ul class="simple">
-<li><p><strong>Forward Selection</strong></p></li>
-<li><p><strong>Backward Elimination</strong></p></li>
-<li><p><strong>Stepwise Selection</strong></p></li>
-<li><p>Comparación de modelos vía AIC, BIC y validación cruzada.</p></li>
+<li><p>Definiremos la variable respuesta <code class="docutils literal notranslate"><span class="pre">cnt</span></code> y el conjunto de predictores.</p></li>
+<li><p>Ajustaremos un modelo completo (todas las variables numéricas).</p></li>
+<li><p>Implementaremos <strong>selección hacia adelante (forward)</strong> usando el <strong>AIC</strong>.</p></li>
+<li><p>Implementaremos <strong>selección hacia atrás (backward)</strong> usando el <strong>AIC</strong>.</p></li>
+<li><p>Compararemos el desempeño de los modelos seleccionados frente al modelo completo usando métricas sobre un conjunto de prueba.</p></li>
 </ul>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">statsmodels.api</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sm</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.model_selection</span><span class="w"> </span><span class="kn">import</span> <span class="n">KFold</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.metrics</span><span class="w"> </span><span class="kn">import</span> <span class="n">mean_squared_error</span>
 
-<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">&quot;hour_prepared.csv&quot;</span><span class="p">)</span>
-<span class="n">y</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;cnt&quot;</span><span class="p">]</span>
-<span class="n">X</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;cnt&quot;</span><span class="p">])</span>
-<span class="n">X</span> <span class="o">=</span> <span class="n">sm</span><span class="o">.</span><span class="n">add_constant</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">statsmodels.api</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sm</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.model_selection</span><span class="w"> </span><span class="kn">import</span> <span class="n">train_test_split</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.metrics</span><span class="w"> </span><span class="kn">import</span> <span class="n">mean_squared_error</span>
+</pre></div>
+</div>
+</div>
+</div>
+<section id="carga-del-conjunto-de-datos-y-definicion-de-variables">
+<h2>5.1 Carga del conjunto de datos y definición de variables<a class="headerlink" href="#carga-del-conjunto-de-datos-y-definicion-de-variables" title="Permalink to this heading">#</a></h2>
+<p>Cargamos el archivo preparado en capítulos anteriores y separamos:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">y</span></code>: demanda de bicicletas por hora (<code class="docutils literal notranslate"><span class="pre">cnt</span></code>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">X_all</span></code>: todas las variables explicativas numéricas.</p></li>
+</ul>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Cargar el dataset preprocesado</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">&quot;../data/hour_prepared.csv&quot;</span><span class="p">)</span>
+
+<span class="c1"># Variable respuesta</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;cnt&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+
+<span class="c1"># Predictores: quitamos la respuesta</span>
+<span class="n">X_all</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;cnt&quot;</span><span class="p">])</span>
+
+<span class="c1"># Nos quedamos solo con columnas numéricas y forzamos a float</span>
+<span class="n">X_all</span> <span class="o">=</span> <span class="n">X_all</span><span class="o">.</span><span class="n">select_dtypes</span><span class="p">(</span><span class="n">include</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;number&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+
+<span class="n">X_all</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">X_all</span><span class="o">.</span><span class="n">dtypes</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output traceback highlight-ipythontb notranslate"><div class="highlight"><pre><span></span><span class="gt">---------------------------------------------------------------------------</span>
-<span class="ne">FileNotFoundError</span><span class="g g-Whitespace">                         </span>Traceback (most recent call last)
-<span class="n">Cell</span> <span class="n">In</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">line</span> <span class="mi">7</span>
-<span class="g g-Whitespace">      </span><span class="mi">4</span> <span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.model_selection</span><span class="w"> </span><span class="kn">import</span> <span class="n">KFold</span>
-<span class="g g-Whitespace">      </span><span class="mi">5</span> <span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.metrics</span><span class="w"> </span><span class="kn">import</span> <span class="n">mean_squared_error</span>
-<span class="ne">----&gt; </span><span class="mi">7</span> <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">&quot;hour_prepared.csv&quot;</span><span class="p">)</span>
-<span class="g g-Whitespace">      </span><span class="mi">8</span> <span class="n">y</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;cnt&quot;</span><span class="p">]</span>
-<span class="g g-Whitespace">      </span><span class="mi">9</span> <span class="n">X</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;cnt&quot;</span><span class="p">])</span>
-
-<span class="nn">File ~\miniconda3\envs\ml_venv_bikes\lib\site-packages\pandas\io\parsers\readers.py:1026,</span> in <span class="ni">read_csv</span><span class="nt">(filepath_or_buffer, sep, delimiter, header, names, index_col, usecols, dtype, engine, converters, true_values, false_values, skipinitialspace, skiprows, skipfooter, nrows, na_values, keep_default_na, na_filter, verbose, skip_blank_lines, parse_dates, infer_datetime_format, keep_date_col, date_parser, date_format, dayfirst, cache_dates, iterator, chunksize, compression, thousands, decimal, lineterminator, quotechar, quoting, doublequote, escapechar, comment, encoding, encoding_errors, dialect, on_bad_lines, delim_whitespace, low_memory, memory_map, float_precision, storage_options, dtype_backend)</span>
-<span class="g g-Whitespace">   </span><span class="mi">1013</span> <span class="n">kwds_defaults</span> <span class="o">=</span> <span class="n">_refine_defaults_read</span><span class="p">(</span>
-<span class="g g-Whitespace">   </span><span class="mi">1014</span>     <span class="n">dialect</span><span class="p">,</span>
-<span class="g g-Whitespace">   </span><span class="mi">1015</span>     <span class="n">delimiter</span><span class="p">,</span>
-   <span class="p">(</span><span class="o">...</span><span class="p">)</span>
-<span class="g g-Whitespace">   </span><span class="mi">1022</span>     <span class="n">dtype_backend</span><span class="o">=</span><span class="n">dtype_backend</span><span class="p">,</span>
-<span class="g g-Whitespace">   </span><span class="mi">1023</span> <span class="p">)</span>
-<span class="g g-Whitespace">   </span><span class="mi">1024</span> <span class="n">kwds</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">kwds_defaults</span><span class="p">)</span>
-<span class="ne">-&gt; </span><span class="mi">1026</span> <span class="k">return</span> <span class="n">_read</span><span class="p">(</span><span class="n">filepath_or_buffer</span><span class="p">,</span> <span class="n">kwds</span><span class="p">)</span>
-
-<span class="nn">File ~\miniconda3\envs\ml_venv_bikes\lib\site-packages\pandas\io\parsers\readers.py:620,</span> in <span class="ni">_read</span><span class="nt">(filepath_or_buffer, kwds)</span>
-<span class="g g-Whitespace">    </span><span class="mi">617</span> <span class="n">_validate_names</span><span class="p">(</span><span class="n">kwds</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;names&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span>
-<span class="g g-Whitespace">    </span><span class="mi">619</span> <span class="c1"># Create the parser.</span>
-<span class="ne">--&gt; </span><span class="mi">620</span> <span class="n">parser</span> <span class="o">=</span> <span class="n">TextFileReader</span><span class="p">(</span><span class="n">filepath_or_buffer</span><span class="p">,</span> <span class="o">**</span><span class="n">kwds</span><span class="p">)</span>
-<span class="g g-Whitespace">    </span><span class="mi">622</span> <span class="k">if</span> <span class="n">chunksize</span> <span class="ow">or</span> <span class="n">iterator</span><span class="p">:</span>
-<span class="g g-Whitespace">    </span><span class="mi">623</span>     <span class="k">return</span> <span class="n">parser</span>
-
-<span class="nn">File ~\miniconda3\envs\ml_venv_bikes\lib\site-packages\pandas\io\parsers\readers.py:1620,</span> in <span class="ni">TextFileReader.__init__</span><span class="nt">(self, f, engine, **kwds)</span>
-<span class="g g-Whitespace">   </span><span class="mi">1617</span>     <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;has_index_names&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">kwds</span><span class="p">[</span><span class="s2">&quot;has_index_names&quot;</span><span class="p">]</span>
-<span class="g g-Whitespace">   </span><span class="mi">1619</span> <span class="bp">self</span><span class="o">.</span><span class="n">handles</span><span class="p">:</span> <span class="n">IOHandles</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-<span class="ne">-&gt; </span><span class="mi">1620</span> <span class="bp">self</span><span class="o">.</span><span class="n">_engine</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_engine</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="p">)</span>
-
-<span class="nn">File ~\miniconda3\envs\ml_venv_bikes\lib\site-packages\pandas\io\parsers\readers.py:1880,</span> in <span class="ni">TextFileReader._make_engine</span><span class="nt">(self, f, engine)</span>
-<span class="g g-Whitespace">   </span><span class="mi">1878</span>     <span class="k">if</span> <span class="s2">&quot;b&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">mode</span><span class="p">:</span>
-<span class="g g-Whitespace">   </span><span class="mi">1879</span>         <span class="n">mode</span> <span class="o">+=</span> <span class="s2">&quot;b&quot;</span>
-<span class="ne">-&gt; </span><span class="mi">1880</span> <span class="bp">self</span><span class="o">.</span><span class="n">handles</span> <span class="o">=</span> <span class="n">get_handle</span><span class="p">(</span>
-<span class="g g-Whitespace">   </span><span class="mi">1881</span>     <span class="n">f</span><span class="p">,</span>
-<span class="g g-Whitespace">   </span><span class="mi">1882</span>     <span class="n">mode</span><span class="p">,</span>
-<span class="g g-Whitespace">   </span><span class="mi">1883</span>     <span class="n">encoding</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;encoding&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
-<span class="g g-Whitespace">   </span><span class="mi">1884</span>     <span class="n">compression</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;compression&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
-<span class="g g-Whitespace">   </span><span class="mi">1885</span>     <span class="n">memory_map</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;memory_map&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">),</span>
-<span class="g g-Whitespace">   </span><span class="mi">1886</span>     <span class="n">is_text</span><span class="o">=</span><span class="n">is_text</span><span class="p">,</span>
-<span class="g g-Whitespace">   </span><span class="mi">1887</span>     <span class="n">errors</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;encoding_errors&quot;</span><span class="p">,</span> <span class="s2">&quot;strict&quot;</span><span class="p">),</span>
-<span class="g g-Whitespace">   </span><span class="mi">1888</span>     <span class="n">storage_options</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;storage_options&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
-<span class="g g-Whitespace">   </span><span class="mi">1889</span> <span class="p">)</span>
-<span class="g g-Whitespace">   </span><span class="mi">1890</span> <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">handles</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
-<span class="g g-Whitespace">   </span><span class="mi">1891</span> <span class="n">f</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">handles</span><span class="o">.</span><span class="n">handle</span>
-
-<span class="nn">File ~\miniconda3\envs\ml_venv_bikes\lib\site-packages\pandas\io\common.py:873,</span> in <span class="ni">get_handle</span><span class="nt">(path_or_buf, mode, encoding, compression, memory_map, is_text, errors, storage_options)</span>
-<span class="g g-Whitespace">    </span><span class="mi">868</span> <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">handle</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-<span class="g g-Whitespace">    </span><span class="mi">869</span>     <span class="c1"># Check whether the filename is to be opened in binary mode.</span>
-<span class="g g-Whitespace">    </span><span class="mi">870</span>     <span class="c1"># Binary mode does not support &#39;encoding&#39; and &#39;newline&#39;.</span>
-<span class="g g-Whitespace">    </span><span class="mi">871</span>     <span class="k">if</span> <span class="n">ioargs</span><span class="o">.</span><span class="n">encoding</span> <span class="ow">and</span> <span class="s2">&quot;b&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">ioargs</span><span class="o">.</span><span class="n">mode</span><span class="p">:</span>
-<span class="g g-Whitespace">    </span><span class="mi">872</span>         <span class="c1"># Encoding</span>
-<span class="ne">--&gt; </span><span class="mi">873</span>         <span class="n">handle</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span>
-<span class="g g-Whitespace">    </span><span class="mi">874</span>             <span class="n">handle</span><span class="p">,</span>
-<span class="g g-Whitespace">    </span><span class="mi">875</span>             <span class="n">ioargs</span><span class="o">.</span><span class="n">mode</span><span class="p">,</span>
-<span class="g g-Whitespace">    </span><span class="mi">876</span>             <span class="n">encoding</span><span class="o">=</span><span class="n">ioargs</span><span class="o">.</span><span class="n">encoding</span><span class="p">,</span>
-<span class="g g-Whitespace">    </span><span class="mi">877</span>             <span class="n">errors</span><span class="o">=</span><span class="n">errors</span><span class="p">,</span>
-<span class="g g-Whitespace">    </span><span class="mi">878</span>             <span class="n">newline</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
-<span class="g g-Whitespace">    </span><span class="mi">879</span>         <span class="p">)</span>
-<span class="g g-Whitespace">    </span><span class="mi">880</span>     <span class="k">else</span><span class="p">:</span>
-<span class="g g-Whitespace">    </span><span class="mi">881</span>         <span class="c1"># Binary mode</span>
-<span class="g g-Whitespace">    </span><span class="mi">882</span>         <span class="n">handle</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">handle</span><span class="p">,</span> <span class="n">ioargs</span><span class="o">.</span><span class="n">mode</span><span class="p">)</span>
-
-<span class="ne">FileNotFoundError</span>: [Errno 2] No such file or directory: &#39;hour_prepared.csv&#39;
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>((17379, 5),
+ temp         float64
+ atemp        float64
+ hum          float64
+ windspeed    float64
+ peak_hour    float64
+ dtype: object)
 </pre></div>
 </div>
 </div>
 </div>
+</section>
+<section id="particion-entrenamiento-prueba-y-modelo-completo">
+<h2>5.2 Partición entrenamiento / prueba y modelo completo<a class="headerlink" href="#particion-entrenamiento-prueba-y-modelo-completo" title="Permalink to this heading">#</a></h2>
+<p>Dividimos el conjunto de datos en entrenamiento (80%) y prueba (20%) para poder comparar el desempeño fuera de la muestra.</p>
+<p>Ajustamos primero un modelo <strong>completo</strong> con todas las variables numéricas para tener un punto de referencia.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">fit_ols</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
-    <span class="n">model</span> <span class="o">=</span> <span class="n">sm</span><span class="o">.</span><span class="n">OLS</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">X</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Partición de datos</span>
+<span class="n">X_train</span><span class="p">,</span> <span class="n">X_test</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">y_test</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span>
+    <span class="n">X_all</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">123</span>
+<span class="p">)</span>
+
+<span class="c1"># Función auxiliar para ajustar OLS dado un subconjunto de columnas</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">fit_ols_from_cols</span><span class="p">(</span><span class="n">cols</span><span class="p">,</span> <span class="n">X_source</span><span class="p">,</span> <span class="n">y_source</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Ajusta un modelo OLS usando las columnas indicadas en &#39;cols&#39;</span>
+<span class="sd">    de X_source, añadiendo un intercepto.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">Xc</span> <span class="o">=</span> <span class="n">sm</span><span class="o">.</span><span class="n">add_constant</span><span class="p">(</span><span class="n">X_source</span><span class="p">[</span><span class="n">cols</span><span class="p">],</span> <span class="n">has_constant</span><span class="o">=</span><span class="s2">&quot;add&quot;</span><span class="p">)</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">sm</span><span class="o">.</span><span class="n">OLS</span><span class="p">(</span><span class="n">y_source</span><span class="p">,</span> <span class="n">Xc</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
     <span class="k">return</span> <span class="n">model</span>
 
-<span class="k">def</span><span class="w"> </span><span class="nf">aic</span><span class="p">(</span><span class="n">model</span><span class="p">):</span>
-    <span class="k">return</span> <span class="n">model</span><span class="o">.</span><span class="n">aic</span>
+<span class="c1"># Modelo completo con todas las columnas numéricas</span>
+<span class="n">all_vars</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">X_all</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+<span class="n">ols_full</span> <span class="o">=</span> <span class="n">fit_ols_from_cols</span><span class="p">(</span><span class="n">all_vars</span><span class="p">,</span> <span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>
 
-<span class="k">def</span><span class="w"> </span><span class="nf">bic</span><span class="p">(</span><span class="n">model</span><span class="p">):</span>
-    <span class="k">return</span> <span class="n">model</span><span class="o">.</span><span class="n">bic</span>
+<span class="n">ols_full</span><span class="o">.</span><span class="n">summary</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><table class="simpletable">
+<caption>OLS Regression Results</caption>
+<tr>
+  <th>Dep. Variable:</th>           <td>cnt</td>       <th>  R-squared:         </th> <td>   0.452</td> 
+</tr>
+<tr>
+  <th>Model:</th>                   <td>OLS</td>       <th>  Adj. R-squared:    </th> <td>   0.452</td> 
+</tr>
+<tr>
+  <th>Method:</th>             <td>Least Squares</td>  <th>  F-statistic:       </th> <td>   2293.</td> 
+</tr>
+<tr>
+  <th>Date:</th>             <td>Sat, 29 Nov 2025</td> <th>  Prob (F-statistic):</th>  <td>  0.00</td>  
+</tr>
+<tr>
+  <th>Time:</th>                 <td>02:51:31</td>     <th>  Log-Likelihood:    </th> <td> -87821.</td> 
+</tr>
+<tr>
+  <th>No. Observations:</th>      <td> 13903</td>      <th>  AIC:               </th> <td>1.757e+05</td>
+</tr>
+<tr>
+  <th>Df Residuals:</th>          <td> 13897</td>      <th>  BIC:               </th> <td>1.757e+05</td>
+</tr>
+<tr>
+  <th>Df Model:</th>              <td>     5</td>      <th>                     </th>     <td> </td>    
+</tr>
+<tr>
+  <th>Covariance Type:</th>      <td>nonrobust</td>    <th>                     </th>     <td> </td>    
+</tr>
+</table>
+<table class="simpletable">
+<tr>
+      <td></td>         <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
+</tr>
+<tr>
+  <th>const</th>     <td>  120.0733</td> <td>    6.250</td> <td>   19.212</td> <td> 0.000</td> <td>  107.823</td> <td>  132.324</td>
+</tr>
+<tr>
+  <th>temp</th>      <td>   61.2861</td> <td>   40.274</td> <td>    1.522</td> <td> 0.128</td> <td>  -17.656</td> <td>  140.229</td>
+</tr>
+<tr>
+  <th>atemp</th>     <td>  340.4978</td> <td>   45.201</td> <td>    7.533</td> <td> 0.000</td> <td>  251.899</td> <td>  429.097</td>
+</tr>
+<tr>
+  <th>hum</th>       <td> -273.4382</td> <td>    6.176</td> <td>  -44.276</td> <td> 0.000</td> <td> -285.543</td> <td> -261.333</td>
+</tr>
+<tr>
+  <th>windspeed</th> <td>    9.5407</td> <td>   10.030</td> <td>    0.951</td> <td> 0.341</td> <td>  -10.119</td> <td>   29.200</td>
+</tr>
+<tr>
+  <th>peak_hour</th> <td>  184.7146</td> <td>    2.622</td> <td>   70.437</td> <td> 0.000</td> <td>  179.574</td> <td>  189.855</td>
+</tr>
+</table>
+<table class="simpletable">
+<tr>
+  <th>Omnibus:</th>       <td>1672.276</td> <th>  Durbin-Watson:     </th> <td>   2.033</td>
+</tr>
+<tr>
+  <th>Prob(Omnibus):</th>  <td> 0.000</td>  <th>  Jarque-Bera (JB):  </th> <td>2797.170</td>
+</tr>
+<tr>
+  <th>Skew:</th>           <td> 0.831</td>  <th>  Prob(JB):          </th> <td>    0.00</td>
+</tr>
+<tr>
+  <th>Kurtosis:</th>       <td> 4.438</td>  <th>  Cond. No.          </th> <td>    75.1</td>
+</tr>
+</table><br/><br/>Notes:<br/>[1] Standard Errors assume that the covariance matrix of the errors is correctly specified.</div></div>
+</div>
+<p>Calculamos el desempeño del modelo completo en el conjunto de prueba usando la raíz del error cuadrático medio (RMSE).</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Desempeño del modelo completo en prueba</span>
+<span class="n">X_test_const_full</span> <span class="o">=</span> <span class="n">sm</span><span class="o">.</span><span class="n">add_constant</span><span class="p">(</span><span class="n">X_test</span><span class="p">[</span><span class="n">all_vars</span><span class="p">],</span> <span class="n">has_constant</span><span class="o">=</span><span class="s2">&quot;add&quot;</span><span class="p">)</span>
+<span class="n">y_pred_full</span> <span class="o">=</span> <span class="n">ols_full</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_test_const_full</span><span class="p">)</span>
 
-<span class="n">predictors</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
-<span class="n">predictors</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="s2">&quot;const&quot;</span><span class="p">)</span>
+<span class="n">rmse_full</span> <span class="o">=</span> <span class="n">mean_squared_error</span><span class="p">(</span><span class="n">y_test</span><span class="p">,</span> <span class="n">y_pred_full</span><span class="p">)</span> <span class="o">**</span> <span class="mf">0.5</span>
+<span class="n">rmse_full</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>135.8479540053958
 </pre></div>
 </div>
 </div>
 </div>
-<section id="forward-selection">
-<h2>Forward Selection<a class="headerlink" href="#forward-selection" title="Permalink to this heading">#</a></h2>
+</section>
+<section id="seleccion-hacia-adelante-forward-aic">
+<h2>5.3 Selección hacia adelante (Forward AIC)<a class="headerlink" href="#seleccion-hacia-adelante-forward-aic" title="Permalink to this heading">#</a></h2>
+<p>Partimos de un modelo sin predictores y vamos agregando, uno a uno, las variables que produzcan la <strong>mayor reducción del AIC</strong>, hasta que ninguna variable mejore el criterio.</p>
+<p>Guardamos el historial de selección para analizar el orden en que entran las variables.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">remaining</span> <span class="o">=</span> <span class="n">predictors</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-<span class="n">selected</span> <span class="o">=</span> <span class="p">[]</span>
-<span class="n">best_models_fwd</span> <span class="o">=</span> <span class="p">{}</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">candidate_vars</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">X_all</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
 
-<span class="k">while</span> <span class="n">remaining</span><span class="p">:</span>
+<span class="n">selected_forward</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="n">current_aic</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+<span class="n">history_forward</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+    <span class="n">remaining</span> <span class="o">=</span> <span class="p">[</span><span class="n">v</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">candidate_vars</span> <span class="k">if</span> <span class="n">v</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">selected_forward</span><span class="p">]</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">remaining</span><span class="p">:</span>
+        <span class="k">break</span>
+
     <span class="n">scores</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">remaining</span><span class="p">:</span>
-        <span class="n">model</span> <span class="o">=</span> <span class="n">fit_ols</span><span class="p">(</span><span class="n">X</span><span class="p">[[</span><span class="s2">&quot;const&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">selected</span> <span class="o">+</span> <span class="p">[</span><span class="n">var</span><span class="p">]],</span> <span class="n">y</span><span class="p">)</span>
-        <span class="n">scores</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">model</span><span class="o">.</span><span class="n">aic</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">model</span><span class="p">))</span>
-    <span class="n">scores</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+        <span class="n">cols_trial</span> <span class="o">=</span> <span class="n">selected_forward</span> <span class="o">+</span> <span class="p">[</span><span class="n">var</span><span class="p">]</span>
+        <span class="n">model_trial</span> <span class="o">=</span> <span class="n">fit_ols_from_cols</span><span class="p">(</span><span class="n">cols_trial</span><span class="p">,</span> <span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>
+        <span class="n">scores</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">model_trial</span><span class="o">.</span><span class="n">aic</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">model_trial</span><span class="p">))</span>
+
+    <span class="c1"># Ordenamos por AIC</span>
+    <span class="n">scores</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
     <span class="n">best_aic</span><span class="p">,</span> <span class="n">best_var</span><span class="p">,</span> <span class="n">best_model</span> <span class="o">=</span> <span class="n">scores</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="n">selected</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">best_var</span><span class="p">)</span>
-    <span class="n">remaining</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">best_var</span><span class="p">)</span>
-    <span class="n">best_models_fwd</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">selected</span><span class="p">)]</span> <span class="o">=</span> <span class="n">best_model</span>
 
-<span class="n">selected</span><span class="p">,</span> <span class="n">best_models_fwd</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">selected</span><span class="p">)]</span><span class="o">.</span><span class="n">summary</span><span class="p">()</span>
+    <span class="c1"># Aceptamos la nueva variable solo si mejora el AIC</span>
+    <span class="k">if</span> <span class="n">best_aic</span> <span class="o">&lt;</span> <span class="n">current_aic</span> <span class="o">-</span> <span class="mf">1e-6</span><span class="p">:</span>
+        <span class="n">current_aic</span> <span class="o">=</span> <span class="n">best_aic</span>
+        <span class="n">selected_forward</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">best_var</span><span class="p">)</span>
+        <span class="n">history_forward</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">selected_forward</span><span class="p">),</span> <span class="n">best_var</span><span class="p">,</span> <span class="n">best_aic</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">break</span>
+
+<span class="n">selected_forward</span><span class="p">,</span> <span class="n">current_aic</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>([&#39;peak_hour&#39;, &#39;temp&#39;, &#39;hum&#39;, &#39;atemp&#39;], np.float64(175653.4250194364))
+</pre></div>
+</div>
+</div>
+</div>
+<p>Mostramos el historial de entrada de variables según el criterio de AIC.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">history_forward_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+    <span class="n">history_forward</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;k&quot;</span><span class="p">,</span> <span class="s2">&quot;variable_agregada&quot;</span><span class="p">,</span> <span class="s2">&quot;AIC&quot;</span><span class="p">]</span>
+<span class="p">)</span>
+<span class="n">history_forward_df</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>k</th>
+      <th>variable_agregada</th>
+      <th>AIC</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>1</td>
+      <td>peak_hour</td>
+      <td>180849.397135</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>2</td>
+      <td>temp</td>
+      <td>177643.260976</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>3</td>
+      <td>hum</td>
+      <td>175708.042095</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>4</td>
+      <td>atemp</td>
+      <td>175653.425019</td>
+    </tr>
+  </tbody>
+</table>
+</div></div></div>
+</div>
+<p>Evaluamos el modelo resultante de selección forward en el conjunto de prueba.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Ajustar modelo final por forward en todo X_train</span>
+<span class="n">ols_forward</span> <span class="o">=</span> <span class="n">fit_ols_from_cols</span><span class="p">(</span><span class="n">selected_forward</span><span class="p">,</span> <span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>
+
+<span class="c1"># Predicción en prueba</span>
+<span class="n">X_test_const_forward</span> <span class="o">=</span> <span class="n">sm</span><span class="o">.</span><span class="n">add_constant</span><span class="p">(</span><span class="n">X_test</span><span class="p">[</span><span class="n">selected_forward</span><span class="p">],</span> <span class="n">has_constant</span><span class="o">=</span><span class="s2">&quot;add&quot;</span><span class="p">)</span>
+<span class="n">y_pred_forward</span> <span class="o">=</span> <span class="n">ols_forward</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_test_const_forward</span><span class="p">)</span>
+
+<span class="n">rmse_forward</span> <span class="o">=</span> <span class="n">mean_squared_error</span><span class="p">(</span><span class="n">y_test</span><span class="p">,</span> <span class="n">y_pred_forward</span><span class="p">)</span> <span class="o">**</span> <span class="mf">0.5</span>
+
+<span class="n">rmse_full</span><span class="p">,</span> <span class="n">rmse_forward</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>(135.8479540053958, 135.86837940388838)
 </pre></div>
 </div>
 </div>
 </div>
 </section>
-<section id="backward-elimination">
-<h2>Backward Elimination<a class="headerlink" href="#backward-elimination" title="Permalink to this heading">#</a></h2>
+<section id="seleccion-hacia-atras-backward-aic">
+<h2>5.4 Selección hacia atrás (Backward AIC)<a class="headerlink" href="#seleccion-hacia-atras-backward-aic" title="Permalink to this heading">#</a></h2>
+<p>Ahora comenzamos desde el modelo <strong>completo</strong> y vamos eliminando, una a una, las variables que menos aportan según el AIC, hasta que no haya mejoras.</p>
+<p>Esta estrategia suele ser útil cuando partimos de un conjunto grande de predictores y queremos simplificar el modelo.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">remaining</span> <span class="o">=</span> <span class="n">predictors</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-<span class="n">best_models_bwd</span> <span class="o">=</span> <span class="p">{}</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">selected_backward</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">X_all</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+<span class="n">current_aic_b</span> <span class="o">=</span> <span class="n">fit_ols_from_cols</span><span class="p">(</span><span class="n">selected_backward</span><span class="p">,</span> <span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span><span class="o">.</span><span class="n">aic</span>
+<span class="n">history_backward</span> <span class="o">=</span> <span class="p">[]</span>
 
-<span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="n">remaining</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+<span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
     <span class="n">scores</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">remaining</span><span class="p">:</span>
-        <span class="n">vars_test</span> <span class="o">=</span> <span class="p">[</span><span class="n">v</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">remaining</span> <span class="k">if</span> <span class="n">v</span> <span class="o">!=</span> <span class="n">var</span><span class="p">]</span>
-        <span class="n">model</span> <span class="o">=</span> <span class="n">fit_ols</span><span class="p">(</span><span class="n">X</span><span class="p">[[</span><span class="s2">&quot;const&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">vars_test</span><span class="p">],</span> <span class="n">y</span><span class="p">)</span>
-        <span class="n">scores</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">model</span><span class="o">.</span><span class="n">aic</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">model</span><span class="p">))</span>
-    <span class="n">scores</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
-    <span class="n">best_aic</span><span class="p">,</span> <span class="n">removed</span><span class="p">,</span> <span class="n">best_model</span> <span class="o">=</span> <span class="n">scores</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="n">remaining</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">removed</span><span class="p">)</span>
-    <span class="n">best_models_bwd</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">remaining</span><span class="p">)]</span> <span class="o">=</span> <span class="n">best_model</span>
+    <span class="c1"># probamos eliminar de a una variable</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">selected_backward</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">break</span>
 
-<span class="n">remaining</span><span class="p">,</span> <span class="n">best_models_bwd</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">remaining</span><span class="p">)]</span><span class="o">.</span><span class="n">summary</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">selected_backward</span><span class="p">:</span>
+        <span class="n">cols_trial</span> <span class="o">=</span> <span class="p">[</span><span class="n">v</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">selected_backward</span> <span class="k">if</span> <span class="n">v</span> <span class="o">!=</span> <span class="n">var</span><span class="p">]</span>
+        <span class="n">model_trial</span> <span class="o">=</span> <span class="n">fit_ols_from_cols</span><span class="p">(</span><span class="n">cols_trial</span><span class="p">,</span> <span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>
+        <span class="n">scores</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">model_trial</span><span class="o">.</span><span class="n">aic</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">cols_trial</span><span class="p">,</span> <span class="n">model_trial</span><span class="p">))</span>
+
+    <span class="n">scores</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">best_aic</span><span class="p">,</span> <span class="n">removed_var</span><span class="p">,</span> <span class="n">best_cols</span><span class="p">,</span> <span class="n">best_model</span> <span class="o">=</span> <span class="n">scores</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="n">best_aic</span> <span class="o">&lt;</span> <span class="n">current_aic_b</span> <span class="o">-</span> <span class="mf">1e-6</span><span class="p">:</span>
+        <span class="n">current_aic_b</span> <span class="o">=</span> <span class="n">best_aic</span>
+        <span class="n">selected_backward</span> <span class="o">=</span> <span class="n">best_cols</span>
+        <span class="n">history_backward</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">selected_backward</span><span class="p">),</span> <span class="n">removed_var</span><span class="p">,</span> <span class="n">best_aic</span><span class="p">)</span>
+        <span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">break</span>
+
+<span class="n">selected_backward</span><span class="p">,</span> <span class="n">current_aic_b</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>([&#39;temp&#39;, &#39;atemp&#39;, &#39;hum&#39;, &#39;peak_hour&#39;], np.float64(175653.4250194364))
+</pre></div>
+</div>
+</div>
+</div>
+<p>Mostramos cómo fue quedando el modelo en el proceso de eliminación hacia atrás.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">history_backward_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+    <span class="n">history_backward</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;k&quot;</span><span class="p">,</span> <span class="s2">&quot;variable_eliminada&quot;</span><span class="p">,</span> <span class="s2">&quot;AIC&quot;</span><span class="p">]</span>
+<span class="p">)</span>
+<span class="n">history_backward_df</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>k</th>
+      <th>variable_eliminada</th>
+      <th>AIC</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>4</td>
+      <td>windspeed</td>
+      <td>175653.425019</td>
+    </tr>
+  </tbody>
+</table>
+</div></div></div>
+</div>
+<p>Evaluamos el modelo resultante de selección backward en el conjunto de prueba y lo comparamos con el modelo completo y el modelo forward.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ols_backward</span> <span class="o">=</span> <span class="n">fit_ols_from_cols</span><span class="p">(</span><span class="n">selected_backward</span><span class="p">,</span> <span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>
+<span class="n">X_test_const_backward</span> <span class="o">=</span> <span class="n">sm</span><span class="o">.</span><span class="n">add_constant</span><span class="p">(</span><span class="n">X_test</span><span class="p">[</span><span class="n">selected_backward</span><span class="p">],</span> <span class="n">has_constant</span><span class="o">=</span><span class="s2">&quot;add&quot;</span><span class="p">)</span>
+<span class="n">y_pred_backward</span> <span class="o">=</span> <span class="n">ols_backward</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_test_const_backward</span><span class="p">)</span>
+
+<span class="n">rmse_backward</span> <span class="o">=</span> <span class="n">mean_squared_error</span><span class="p">(</span><span class="n">y_test</span><span class="p">,</span> <span class="n">y_pred_backward</span><span class="p">)</span> <span class="o">**</span> <span class="mf">0.5</span>
+
+<span class="n">rmse_full</span><span class="p">,</span> <span class="n">rmse_forward</span><span class="p">,</span> <span class="n">rmse_backward</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>(135.8479540053958, 135.86837940388838, 135.8683794038884)
 </pre></div>
 </div>
 </div>
 </div>
 </section>
-<section id="stepwise-selection">
-<h2>Stepwise Selection<a class="headerlink" href="#stepwise-selection" title="Permalink to this heading">#</a></h2>
+<section id="resumen-comparativo-de-modelos">
+<h2>5.5 Resumen comparativo de modelos<a class="headerlink" href="#resumen-comparativo-de-modelos" title="Permalink to this heading">#</a></h2>
+<p>Construimos una tabla de comparación de los modelos considerados:</p>
+<ul class="simple">
+<li><p>Modelo completo (todas las variables).</p></li>
+<li><p>Modelo forward (AIC).</p></li>
+<li><p>Modelo backward (AIC).</p></li>
+</ul>
+<p>Usamos como referencia el RMSE en el conjunto de prueba.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">selected</span> <span class="o">=</span> <span class="p">[]</span>
-<span class="n">remaining</span> <span class="o">=</span> <span class="n">predictors</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-<span class="n">best_models_step</span> <span class="o">=</span> <span class="p">{}</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">resumen_modelos</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span>
+    <span class="s2">&quot;modelo&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;Completo&quot;</span><span class="p">,</span> <span class="s2">&quot;Forward AIC&quot;</span><span class="p">,</span> <span class="s2">&quot;Backward AIC&quot;</span><span class="p">],</span>
+    <span class="s2">&quot;k_variables&quot;</span><span class="p">:</span> <span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">all_vars</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">selected_forward</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">selected_backward</span><span class="p">)],</span>
+    <span class="s2">&quot;RMSE_test&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">rmse_full</span><span class="p">,</span> <span class="n">rmse_forward</span><span class="p">,</span> <span class="n">rmse_backward</span><span class="p">],</span>
+<span class="p">})</span>
 
-<span class="n">improved</span> <span class="o">=</span> <span class="kc">True</span>
-<span class="k">while</span> <span class="n">improved</span><span class="p">:</span>
-    <span class="n">improved</span> <span class="o">=</span> <span class="kc">False</span>
-
-    <span class="c1"># Forward step</span>
-    <span class="n">fwd_scores</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">remaining</span><span class="p">:</span>
-        <span class="n">model</span> <span class="o">=</span> <span class="n">fit_ols</span><span class="p">(</span><span class="n">X</span><span class="p">[[</span><span class="s2">&quot;const&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">selected</span> <span class="o">+</span> <span class="p">[</span><span class="n">var</span><span class="p">]],</span> <span class="n">y</span><span class="p">)</span>
-        <span class="n">fwd_scores</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">model</span><span class="o">.</span><span class="n">aic</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">model</span><span class="p">))</span>
-    <span class="n">fwd_scores</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
-    <span class="n">best_aic_fwd</span><span class="p">,</span> <span class="n">best_var_fwd</span><span class="p">,</span> <span class="n">best_model_fwd</span> <span class="o">=</span> <span class="n">fwd_scores</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">selected</span> <span class="ow">or</span> <span class="n">best_aic_fwd</span> <span class="o">&lt;</span> <span class="n">fit_ols</span><span class="p">(</span><span class="n">X</span><span class="p">[[</span><span class="s2">&quot;const&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">selected</span><span class="p">],</span> <span class="n">y</span><span class="p">)</span><span class="o">.</span><span class="n">aic</span><span class="p">:</span>
-        <span class="n">selected</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">best_var_fwd</span><span class="p">)</span>
-        <span class="n">remaining</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">best_var_fwd</span><span class="p">)</span>
-        <span class="n">improved</span> <span class="o">=</span> <span class="kc">True</span>
-        <span class="k">continue</span>
-
-    <span class="c1"># Backward step</span>
-    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">selected</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
-        <span class="n">bwd_scores</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">selected</span><span class="p">:</span>
-            <span class="n">vars_test</span> <span class="o">=</span> <span class="p">[</span><span class="n">v</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">selected</span> <span class="k">if</span> <span class="n">v</span> <span class="o">!=</span> <span class="n">var</span><span class="p">]</span>
-            <span class="n">model</span> <span class="o">=</span> <span class="n">fit_ols</span><span class="p">(</span><span class="n">X</span><span class="p">[[</span><span class="s2">&quot;const&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">vars_test</span><span class="p">],</span> <span class="n">y</span><span class="p">)</span>
-            <span class="n">bwd_scores</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">model</span><span class="o">.</span><span class="n">aic</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">model</span><span class="p">))</span>
-        <span class="n">bwd_scores</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
-        <span class="n">best_aic_bwd</span><span class="p">,</span> <span class="n">remove_var</span><span class="p">,</span> <span class="n">best_model_bwd</span> <span class="o">=</span> <span class="n">bwd_scores</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-
-        <span class="k">if</span> <span class="n">best_aic_bwd</span> <span class="o">&lt;</span> <span class="n">fit_ols</span><span class="p">(</span><span class="n">X</span><span class="p">[[</span><span class="s2">&quot;const&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">selected</span><span class="p">],</span> <span class="n">y</span><span class="p">)</span><span class="o">.</span><span class="n">aic</span><span class="p">:</span>
-            <span class="n">selected</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">remove_var</span><span class="p">)</span>
-            <span class="n">remaining</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">remove_var</span><span class="p">)</span>
-            <span class="n">improved</span> <span class="o">=</span> <span class="kc">True</span>
-
-<span class="n">selected</span><span class="p">,</span> <span class="n">fit_ols</span><span class="p">(</span><span class="n">X</span><span class="p">[[</span><span class="s2">&quot;const&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">selected</span><span class="p">],</span> <span class="n">y</span><span class="p">)</span><span class="o">.</span><span class="n">summary</span><span class="p">()</span>
+<span class="n">resumen_modelos</span>
 </pre></div>
 </div>
 </div>
+<div class="cell_output docutils container">
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>modelo</th>
+      <th>k_variables</th>
+      <th>RMSE_test</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>Completo</td>
+      <td>5</td>
+      <td>135.847954</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>Forward AIC</td>
+      <td>4</td>
+      <td>135.868379</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>Backward AIC</td>
+      <td>4</td>
+      <td>135.868379</td>
+    </tr>
+  </tbody>
+</table>
+</div></div></div>
 </div>
-</section>
-<section id="validacion-cruzada-comparacion-de-modelos">
-<h2>Validación Cruzada – Comparación de Modelos<a class="headerlink" href="#validacion-cruzada-comparacion-de-modelos" title="Permalink to this heading">#</a></h2>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">cv_rmse</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">5</span><span class="p">):</span>
-    <span class="n">kf</span> <span class="o">=</span> <span class="n">KFold</span><span class="p">(</span><span class="n">n_splits</span><span class="o">=</span><span class="n">k</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
-    <span class="n">rmses</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">for</span> <span class="n">train_idx</span><span class="p">,</span> <span class="n">test_idx</span> <span class="ow">in</span> <span class="n">kf</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">X</span><span class="p">):</span>
-        <span class="n">model</span> <span class="o">=</span> <span class="n">fit_ols</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">train_idx</span><span class="p">],</span> <span class="n">y</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">test_idx</span><span class="o">*</span><span class="mi">0</span> <span class="p">:</span> <span class="n">train_idx</span><span class="o">*</span><span class="mi">0</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">test_idx</span><span class="p">)])</span>
-        <span class="n">y_pred</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">test_idx</span><span class="p">])</span>
-        <span class="n">rmses</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">mean_squared_error</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">test_idx</span><span class="p">],</span> <span class="n">y_pred</span><span class="p">)))</span>
-    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">rmses</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-</div>
-<p><strong>(Nota)</strong> la celda de CV se ajustará después para asegurar índices correctos.</p>
+<p>En capítulos posteriores, tomaremos como punto de partida el modelo que muestre mejor compromiso entre complejidad (número de variables) y error de predicción en el conjunto de prueba.</p>
+<p>También podremos usar el conjunto de variables seleccionadas como base para ajustes más avanzados (regularización, validación cruzada más exhaustiva, etc.).</p>
 </section>
 </section>
 
@@ -682,10 +949,11 @@ document.write(`
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#forward-selection">Forward Selection</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#backward-elimination">Backward Elimination</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#stepwise-selection">Stepwise Selection</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#validacion-cruzada-comparacion-de-modelos">Validación Cruzada – Comparación de Modelos</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#carga-del-conjunto-de-datos-y-definicion-de-variables">5.1 Carga del conjunto de datos y definición de variables</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#particion-entrenamiento-prueba-y-modelo-completo">5.2 Partición entrenamiento / prueba y modelo completo</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#seleccion-hacia-adelante-forward-aic">5.3 Selección hacia adelante (Forward AIC)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#seleccion-hacia-atras-backward-aic">5.4 Selección hacia atrás (Backward AIC)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#resumen-comparativo-de-modelos">5.5 Resumen comparativo de modelos</a></li>
 </ul>
   </nav></div>
 
